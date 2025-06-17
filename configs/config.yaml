@@ -1,0 +1,83 @@
+# Microservices Configuration
+env: "development"
+
+# HTTP Server Configuration
+http:
+  oms:
+    port: "8080"
+    read_timeout: "10s"
+    write_timeout: "10s"
+    idle_timeout: "70s"
+  ims:
+    port: "8081"
+    read_timeout: "10s"
+    write_timeout: "10s"
+    idle_timeout: "70s"
+
+# Database Configuration
+database:
+  postgres:
+    host: "localhost"
+    port: "5432"
+    username: "postgres"
+    password: "password"
+    dbname: "ims_db"
+    max_open_connections: 100
+    max_idle_connections: 10
+    conn_max_lifetime: "1h"
+    debug_mode: false
+    prepare_stmt: true
+    skip_default_transaction: false
+  
+  mongodb:
+    host: "localhost"
+    port: "27017"
+    username: ""
+    password: ""
+    dbname: "oms_db"
+    auth_source: "admin"
+
+# Redis Configuration
+redis:
+  hosts: ["localhost:6379"]
+  pool_size: 50
+  min_idle_conn: 10
+  dial_timeout: "500ms"
+  read_timeout: "2s"
+  write_timeout: "2s"
+  idle_timeout: "600s"
+
+# Kafka Configuration
+kafka:
+  brokers: ["localhost:9092"]
+  client_id: "microservices"
+  version: "2.8.1"
+  retry_interval: "1s"
+  compression: "snappy"
+
+# SQS Configuration
+sqs:
+  region: "us-east-1"
+  endpoint: "http://localhost:4566"
+  create_bulk_order_queue: "create-bulk-order"
+
+# S3 Configuration
+s3:
+  region: "us-east-1"
+  endpoint: "http://localhost:9000"
+  bucket: "csv-files"
+
+# Logging Configuration
+logging:
+  level: "info"
+  format: "json"
+
+# Service Configuration
+services:
+  oms:
+    name: "order-management-service"
+    ims_base_url: "http://localhost:8081"
+    ims_timeout: "5s"
+  
+  ims:
+    name: "inventory-management-service" 

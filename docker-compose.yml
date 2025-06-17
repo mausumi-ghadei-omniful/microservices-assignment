@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for IMS
+  postgres:
+    image: postgres:15
+    container_name: ims_postgres
+    environment:
+      POSTGRES_DB: ims_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservices_network
+
+  # MongoDB for OMS
+  mongodb:
+    image: mongo:7
+    container_name: oms_mongodb
+    environment:
+      MONGO_INITDB_DATABASE: oms_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - microservices_network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: microservices_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - microservices_network
+
+  # Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: kafka_zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - microservices_network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka_broker
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    networks:
+      - microservices_network
+
+  # LocalStack for SQS and S3
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: microservices_localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs,s3
+      - DEFAULT_REGION=us-east-1
+      - AWS_DEFAULT_REGION=us-east-1
+      - DEBUG=1
+    volumes:
+      - localstack_data:/var/lib/localstack
+    networks:
+      - microservices_network
+
+  # MinIO for S3 (alternative to LocalStack S3)
+  minio:
+    image: minio/minio:latest
+    container_name: microservices_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - microservices_network
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
+  localstack_data:
+  minio_data:
+
+networks:
+  microservices_network:
+    driver: bridge 
