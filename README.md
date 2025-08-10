@@ -1,6 +1,6 @@
 # Microservices Assignment
 
-This repository contains two microservices built using GoCommons libraries and patterns:
+This repository contains two microservices built using GoCommons libraries and patterns:-
 
 ## Services
 
